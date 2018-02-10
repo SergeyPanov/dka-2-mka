@@ -12,17 +12,17 @@ dispatch = [
     ]
 
 -- Split string on comma ','
-split :: String -> Char -> [String]
-split [] delim = [""]
-split (c:cs) delim
-   | c == delim = "" : rest
+split :: String -> [String]
+split [] = [""]
+split (c:cs)
+   | c == ',' = "" : rest
    | otherwise = (c : head rest) : tail rest
    where
-       rest = split cs delim
+       rest = split cs
 
 
 -- Create tuple with rule
-tuplify3 :: [t] -> (t, t, t)
+tuplify3 :: [String] -> (String, String, String)
 tuplify3 [q, a, p] = (q, a, p)
 
 -- Execute reading and printing
@@ -30,11 +30,14 @@ readAndPrint :: String -> IO()
 readAndPrint input = do
     let lns = lines input
         (states:start:finits:rules) = lns
-    print $ split states ','
-    print $ split start ','
-    print $ split finits ','
-    mapM print rules
-    print rules
+        listsOfRules = fmap split rules
+        tuples = fmap tuplify3 listsOfRules
+    print $ split states
+    print $ split start
+    print $ split finits
+    -- print listsOfRules
+    print tuples
+    -- print rules
 
 
 -- Execute minimization
