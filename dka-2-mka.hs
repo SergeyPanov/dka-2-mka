@@ -51,7 +51,7 @@ makeDKA input =
         tuples = fmap tuplify3 listsOfRules
     in ( Set.toList $ (Set.fromList (split states)), Set.toList (Set.fromList (getAlphabet tuples)), start, Set.toList (Set.fromList (split finits)), Set.toList (Set.fromList tuples) )
 
--- Execute reading and printing
+-- Execute reading and printing; parameter -i
 readAndPrint :: String -> IO()
 readAndPrint input = do print $ makeDKA input
     -- print $ split states
@@ -76,28 +76,37 @@ readAndPrint input = do print $ makeDKA input
 --     -- print rules
 
 
+-- distinguish :: 
+-- distinguish 
+
 -- Sigma function(rules)
 sigma :: [(String, String, String)] -> (String, String) -> Maybe String
 sigma rules (state, symbol)  = 
     if ( length [p | (q, a, p) <- rules, q == state, a == symbol] ) > 0
-        then Just (head $ [p | (q, a, p) <- rules, q == state, a == symbol])
-        else Nothing
+        then Just (head $ [p | (q, a, p) <- rules, q == state, a == symbol])    -- Return Just target state
+        else Nothing -- Return nothing
 
--- test (state, symbol) states rules = sigma (state, symbol) states rules
-
--- Execute minimization
+-- Execute minimization; parameter -t
+-- TODO: distinguish function
 minimize :: String -> IO()
 minimize input = do
     let
-        (states, alphabet, start, finits, rules) = makeDKA input
-        pairs = [(x, y) | x <- states, y <- alphabet]
-        aux =  (map (sigma rules ) pairs )
+        (states, alphabet, start, finits, rules) = makeDKA input -- Create DKA based on definition
+        pairs = [(x, y) | x <- states, y <- alphabet] -- Create pairs of rules
+        notFinit = Set.toList ( (Set.fromList states) `Set.difference` (Set.fromList finits) )
+        zeroEq = [finits, notFinit]
+        targets =  (map (sigma rules ) pairs ) -- Target states
 
+
+    print $ zeroEq
+    print "-----------"
+    print $ notFinit
+    print "-----------"
     print $ rules
     print "-----------"
     print $ pairs
     print "-----------"
-    print $ aux
+    print $ targets
     return ()
     
 
@@ -109,6 +118,7 @@ readFromFile action file = do
                                             contents <- hGetContents handle
                                             action contents
                                             )
+
 -- Read DKA from stdin
 readFromStdIn :: ( String -> IO() ) -> IO()
 readFromStdIn action = do
@@ -122,9 +132,9 @@ main = do
 
     let (Just action) = lookup command dispatch
 
-    if length source == 0
-        then readFromStdIn action
-        else do readFromFile action (head source)
+    if length source == 0   -- If source file was not set
+        then readFromStdIn action   -- Reading from stdin
+        else do readFromFile action (head source)   -- Reading from file
             
 
     putStrLn "End main"
