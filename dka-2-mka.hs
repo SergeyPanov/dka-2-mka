@@ -25,19 +25,38 @@ split (c:cs)
 tuplify3 :: [String] -> (String, String, String)
 tuplify3 [q, a, p] = (q, a, p)
 
--- Execute reading and printing
-readAndPrint :: String -> IO()
-readAndPrint input = do
+-- Create the DKA structure based on definition
+makeDKA :: String -> ([String], String, [String], [(String, String, String)])
+makeDKA input =
     let lns = lines input
         (states:start:finits:rules) = lns
         listsOfRules = fmap split rules
         tuples = fmap tuplify3 listsOfRules
-    print $ split states
-    print $ split start
-    print $ split finits
+    in ((split states), start, (split finits), tuples)
+
+-- Execute reading and printing
+readAndPrint :: String -> IO()
+readAndPrint input = do print $ makeDKA input
+    -- print $ split states
+    -- print $ split start
+    -- print $ split finits
     -- print listsOfRules
-    print tuples
+    -- print tuples
     -- print rules
+
+-- -- Execute reading and printing
+-- readAndPrint :: String -> IO()
+-- readAndPrint input = do
+--     let lns = lines input
+--         (states:start:finits:rules) = lns
+--         listsOfRules = fmap split rules
+--         tuples = fmap tuplify3 listsOfRules
+--     print $ split states
+--     print $ split start
+--     print $ split finits
+--     -- print listsOfRules
+--     print tuples
+--     -- print rules
 
 
 -- Execute minimization
