@@ -21,18 +21,27 @@ split (c:cs)
        rest = split cs
 
 
+-- Return second element from tuple
+getSecond :: (String, String, String) -> String
+getSecond (_, x, _) = x
+
+
 -- Create tuple with rule
 tuplify3 :: [String] -> (String, String, String)
 tuplify3 [q, a, p] = (q, a, p)
 
+getAlphabet :: [(String, String, String)] -> [String]
+getAlphabet [] = []
+getAlphabet (x:xs) = (getSecond x):(getAlphabet xs)
+
 -- Create the DKA structure based on definition
-makeDKA :: String -> ([String], String, [String], [(String, String, String)])
+makeDKA :: String -> ([String], [String], String, [String], [(String, String, String)])
 makeDKA input =
     let lns = lines input
         (states:start:finits:rules) = lns
         listsOfRules = fmap split rules
         tuples = fmap tuplify3 listsOfRules
-    in ((split states), start, (split finits), tuples)
+    in ( Set.toList $ (Set.fromList (split states)), Set.toList (Set.fromList (getAlphabet tuples)), start, Set.toList (Set.fromList (split finits)), Set.toList (Set.fromList tuples) )
 
 -- Execute reading and printing
 readAndPrint :: String -> IO()
