@@ -74,17 +74,17 @@ minimize x = do
     putStr $ x ++ " minimize"
 
 -- Read DKA from the file
-readFromFile :: String -> IO()
-readFromFile file = do
+readFromFile :: ( String -> IO() ) -> FilePath -> IO()
+readFromFile action file = do
     withFile  file ReadMode (\handle -> do
                                             contents <- hGetContents handle
-                                            readAndPrint contents
+                                            action contents
                                             )
 -- Read DKA from stdin
-readFromStdIn :: IO()
-readFromStdIn = do
+readFromStdIn :: ( String -> IO() ) -> IO()
+readFromStdIn action = do
         contents <- getContents
-        putStrLn contents
+        action contents
 
 
 main = do
@@ -94,8 +94,8 @@ main = do
     let (Just action) = lookup command dispatch
 
     if length source == 0
-        then readFromStdIn
-        else do readFromFile (head source)
+        then readFromStdIn action
+        else do readFromFile action (head source)
             
 
     putStrLn "End main"
