@@ -22,14 +22,22 @@ split (c:cs)
 
 
 -- Return second element from tuple
+getFirst :: (String, String, String) -> String
+getFirst (x, _, _) = x
+
+-- Return second element from tuple
 getSecond :: (String, String, String) -> String
 getSecond (_, x, _) = x
 
+-- Return third element from tuple
+getThird :: (String, String, String) -> Maybe String
+getThird (_, _, x) = Just x
 
 -- Create tuple with rule
 tuplify3 :: [String] -> (String, String, String)
 tuplify3 [q, a, p] = (q, a, p)
 
+-- Return whole alphabet based on rules
 getAlphabet :: [(String, String, String)] -> [String]
 getAlphabet [] = []
 getAlphabet (x:xs) = (getSecond x):(getAlphabet xs)
@@ -68,10 +76,33 @@ readAndPrint input = do print $ makeDKA input
 --     -- print rules
 
 
+-- Sigma function(rules)
+sigma :: [(String, String, String)] -> (String, String) ->  [String]
+sigma rules (state, symbol)  = [p | (state, symbol, p) <- rules]
+
+-- test (state, symbol) states rules = sigma (state, symbol) states rules
+
 -- Execute minimization
 minimize :: String -> IO()
-minimize x = do
-    putStr $ x ++ " minimize"
+minimize input = do
+    let
+        (states, alphabet, start, finits, rules) = makeDKA input
+        pairs = [(x, y) | x <- states, y <- alphabet]
+
+        -- targets = Set.toList $ (Set.fromList [p | p <- states, q <- states, a <- alphabet, (q, a, p) <- rules] )
+
+        aux = head $ Set.toList ( Set.fromList $ map (sigma rules ) pairs )
+
+    print $ pairs
+    print $ rules
+    print $ aux
+    -- print $ start
+    -- print $ states
+    -- print $ alphabet
+    -- print $ finits
+    -- print $ rules
+
+    
 
 -- Read DKA from the file
 readFromFile :: ( String -> IO() ) -> FilePath -> IO()
