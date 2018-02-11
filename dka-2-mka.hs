@@ -77,8 +77,8 @@ readAndPrint input = do print $ makeDKA input
 
 
 -- Sigma function(rules)
-sigma :: [(String, String, String)] -> (String, String) ->  [String]
-sigma rules (state, symbol)  = [p | (state, symbol, p) <- rules]
+sigma :: [(String, String, String)] -> (String, String) -> String
+sigma rules (state, symbol)  = head $ [p | (q, a, p) <- rules, q == state, a == symbol]
 
 -- test (state, symbol) states rules = sigma (state, symbol) states rules
 
@@ -88,21 +88,16 @@ minimize input = do
     let
         (states, alphabet, start, finits, rules) = makeDKA input
         pairs = [(x, y) | x <- states, y <- alphabet]
+        aux =  (map (sigma rules ) pairs )
 
-        -- targets = Set.toList $ (Set.fromList [p | p <- states, q <- states, a <- alphabet, (q, a, p) <- rules] )
-
-        aux = head $ Set.toList ( Set.fromList $ map (sigma rules ) pairs )
-
-    print $ pairs
     print $ rules
+    print "-----------"
+    print $ pairs
+    print "-----------"
     print $ aux
-    -- print $ start
-    -- print $ states
-    -- print $ alphabet
-    -- print $ finits
-    -- print $ rules
-
+    return ()
     
+
 
 -- Read DKA from the file
 readFromFile :: ( String -> IO() ) -> FilePath -> IO()
