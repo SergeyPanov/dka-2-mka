@@ -77,8 +77,11 @@ readAndPrint input = do print $ makeDKA input
 
 
 -- Sigma function(rules)
-sigma :: [(String, String, String)] -> (String, String) -> String
-sigma rules (state, symbol)  = head $ [p | (q, a, p) <- rules, q == state, a == symbol]
+sigma :: [(String, String, String)] -> (String, String) -> Maybe String
+sigma rules (state, symbol)  = 
+    if ( length [p | (q, a, p) <- rules, q == state, a == symbol] ) > 0
+        then Just (head $ [p | (q, a, p) <- rules, q == state, a == symbol])
+        else Nothing
 
 -- test (state, symbol) states rules = sigma (state, symbol) states rules
 
