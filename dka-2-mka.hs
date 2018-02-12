@@ -75,9 +75,28 @@ readAndPrint input = do print $ makeDKA input
 --     print tuples
 --     -- print rules
 
+-- -- undistinguished ::
+undistinguished (states, alphabet, start, finits, rules) oldPairs newPairs
+    | oldPairs == newPairs = newPairs
+    | otherwise = undistinguished (states, alphabet, start, finits, rules) newPairs [(p, q) | (p, q) <- newPairs, a <- alphabet,  ( ( (sigma rules (p, a)), (sigma rules (q, a)) ) `elem` newPairs ) ]
 
--- distinguish :: 
--- distinguish 
+-- Table filling algorithm
+-- tableFilling :: 
+tableFilling (states, alphabet, start, finits, rules) = do
+    let
+        nonFinits = Set.toList ( (Set.fromList states) `Set.difference` (Set.fromList finits) )
+        distinguishableF = [(p, q) | p <- finits, q <- finits]
+        distinguishableNF = [(p, q) | p <- nonFinits, q <- nonFinits]
+        distinguishable = Set.toList (Set.fromList distinguishableF `Set.union` Set.fromList distinguishableNF)
+        aux = undistinguished (states, alphabet, start, finits, rules) [] distinguishable
+
+    print $ distinguishable
+    print "-----------"
+    print $ finits
+    print "-----------"
+    print $ nonFinits
+
+    return()
 
 -- Sigma function(rules)
 sigma :: [(String, String, String)] -> (String, String) -> Maybe String
@@ -93,20 +112,23 @@ minimize input = do
     let
         (states, alphabet, start, finits, rules) = makeDKA input -- Create DKA based on definition
         pairs = [(x, y) | x <- states, y <- alphabet] -- Create pairs of rules
-        notFinit = Set.toList ( (Set.fromList states) `Set.difference` (Set.fromList finits) )
-        zeroEq = [finits, notFinit]
+        nonFinits = Set.toList ( (Set.fromList states) `Set.difference` (Set.fromList finits) )
+        zeroEq = [finits, nonFinits]
         targets =  (map (sigma rules ) pairs ) -- Target states
+        -- distinguishable = [(p, q) | p <- finits, q <- nonFinits]
 
-
-    print $ zeroEq
-    print "-----------"
-    print $ notFinit
-    print "-----------"
-    print $ rules
-    print "-----------"
-    print $ pairs
-    print "-----------"
-    print $ targets
+    tableFilling $ (states, alphabet, start, finits, rules)
+    -- print $ distinguishable
+    -- print "-----------"
+    -- print $ finits
+    -- print "-----------"
+    -- print $ nonFinits
+    -- print "-----------"
+    -- print $ rules
+    -- print "-----------"
+    -- print $ pairs
+    -- print "-----------"
+    -- print $ targets
     return ()
     
 
