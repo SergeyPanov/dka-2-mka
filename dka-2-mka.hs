@@ -48,24 +48,14 @@ getAlphabet (x:xs) = (getInput x):(getAlphabet xs)
 stringifyTransition :: Transition -> String
 stringifyTransition tr = (from tr) ++ "," ++ (\c -> [c]) (input tr) ++ "," ++ (to tr)
 
--- makeDKA :: String -> Automata
+-- Construct FSM
+makeFSM :: String -> Automata
 makeFSM input =
     let lns = lines input
         (states:start:finits:rules) = lns
         listsOfRules = fmap split ( Set.toList $ Set.fromList rules)
         tuples = fmap constructTransition listsOfRules
     in Automata (Set.toList (Set.fromList (split states))) (Set.toList (Set.fromList (getAlphabet tuples))) (start) (tuples) (Set.toList (Set.fromList (split finits)))
-    -- in ( Set.toList $ (Set.fromList (split states)), Set.toList (Set.fromList (getAlphabet tuples)), start, Set.toList (Set.fromList (split finits)), Set.toList (Set.fromList tuples) )
-
-
--- Create the DKA structure based on definition
--- makeDKA :: String -> ([String], [String], String, [String], [(String, String, String)])
--- makeDKA input =
---     let lns = lines input
---         (states:start:finits:rules) = lns
---         listsOfRules = fmap split rules
---         tuples = fmap constructTransition listsOfRules
---     in ( Set.toList $ (Set.fromList (split states)), Set.toList (Set.fromList (getAlphabet tuples)), start, Set.toList (Set.fromList (split finits)), Set.toList (Set.fromList tuples) )
 
 -- Execute reading and printing; parameter -i
 readAndPrint :: String -> IO()
@@ -84,11 +74,6 @@ readAndPrint input = do
     putStrLn $ id $ List.intercalate "\n" stringifyedTransitions
     return()
 
--- -- undistinguished ::
--- undistinguished (states, alphabet, start, finits, rules) oldPairs newPairs
---     | oldPairs == newPairs = newPairs
---     | otherwise = undistinguished (states, alphabet, start, finits, rules) newPairs [(p, q) | (p, q) <- newPairs, a <- alphabet,  ( ( (sigma rules (p, a)), (sigma rules (q, a)) ) `elem` newPairs ) ]
-
 -- Table filling algorithm
 -- tableFilling :: 
 tableFilling (states, alphabet, start, finits, rules) = do
@@ -97,7 +82,6 @@ tableFilling (states, alphabet, start, finits, rules) = do
         distinguishableF = [(p, q) | p <- finits, q <- finits]
         distinguishableNF = [(p, q) | p <- nonFinits, q <- nonFinits]
         distinguishable = Set.toList (Set.fromList distinguishableF `Set.union` Set.fromList distinguishableNF)
-        -- aux = undistinguished (states, alphabet, start, finits, rules) [] distinguishable
 
     print $ distinguishable
     print "-----------"
@@ -107,17 +91,29 @@ tableFilling (states, alphabet, start, finits, rules) = do
 
     return()
 
--- Sigma function(rules)
-sigma :: [(String, String, String)] -> (String, String) -> Maybe String
-sigma rules (state, symbol)  = 
-    if ( length [p | (q, a, p) <- rules, q == state, a == symbol] ) > 0
-        then Just (head $ [p | (q, a, p) <- rules, q == state, a == symbol])    -- Return Just target state
-        else Nothing -- Return nothing
+-- -- Sigma function(rules)
+-- sigma :: [(String, String, String)] -> (String, String) -> Maybe String
+-- sigma rules (state, symbol)  = 
+--     if ( length [p | (q, a, p) <- rules, q == state, a == symbol] ) > 0
+--         then Just (head $ [p | (q, a, p) <- rules, q == state, a == symbol])    -- Return Just target state
+--         else Nothing -- Return nothing
+
+-- addSINK :: Automata -> Automata
+addSINK fsm = do
+    let
+        sinkedRules = Set.toList $ Set.fromList [(p, a, "SINK") | p <- states fsm, q <- states fsm, a <- alphabet fsm, (length $ sigma fsm p a) == 0 ]
+
+
+    putStrLn "-------"
+    print $ sinkedRules
+    putStrLn "-------"
+    -- print $ sinkedRules
 
 -- Execute minimization; parameter -t
--- TODO: distinguish function
 minimize :: String -> IO()
 minimize input = do
+    addSINK $ makeFSM input
+    putStrLn "minimize"
     return()
     -- let
         -- (states, alphabet, start, finits, rules) = makeDKA input -- Create DKA based on definition
