@@ -1,6 +1,8 @@
 {-# LANGUAGE InstanceSigs #-}
 module Automata  where
 
+import qualified Data.Set as Set
+
 
 -- Create aliases for convinience
 type State = String -- Alias for state
@@ -22,6 +24,10 @@ data Automata = Automata {states :: [State]
 -- Return list of "to" states
 sigma :: Automata -> State -> Symbol -> [State]
 sigma fsm f i = [q | Transition p a q <- transitions fsm, p == f, i == a]
+
+-- Return list of non finit states
+nonFinits :: Automata -> [State]
+nonFinits fsm = Set.toList ( (Set.fromList $ states fsm) `Set.difference` (Set.fromList $ finits fsm) )
 
 instance Eq Transition where
     (==) :: Transition -> Transition -> Bool

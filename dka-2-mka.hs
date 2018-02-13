@@ -97,6 +97,13 @@ merge xs     []     = xs
 merge []     ys     = ys
 merge (x:xs) (y:ys) = x : y : merge xs ys
 
+-- Execute zero distinguish
+zeroIteration :: Automata -> [(State, State)]
+zeroIteration fsm = merge fs nfs 
+    where
+        fs = [(p, q) | p <- finits fsm, q <- finits fsm]
+        nfs = [(p, q) | p <- nonFinits fsm, q <- nonFinits fsm]
+
 -- Create list of transitions at SINK state
 createTransitionsToSINK :: [[String]] -> [Transition]
 createTransitionsToSINK [] = []
@@ -113,10 +120,15 @@ addSINK fsm = do
         then Automata (merge (states fsm) ["SINK"]) (alphabet fsm) (start fsm) (merge (transitions fsm)trs) (finits fsm)
         else do fsm
 
+
+
+-- zeroIteration :: Automata -> 
+
 -- Execute minimization; parameter -t
 minimize :: String -> IO()
 minimize input = do
-    print $ addSINK $ makeFSM input
+    print $ zeroIteration $ addSINK $ makeFSM input
+
     putStrLn "minimize"
     return()
 
