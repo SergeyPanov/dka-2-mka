@@ -91,52 +91,35 @@ tableFilling (states, alphabet, start, finits, rules) = do
 
     return()
 
--- -- Sigma function(rules)
--- sigma :: [(String, String, String)] -> (String, String) -> Maybe String
--- sigma rules (state, symbol)  = 
---     if ( length [p | (q, a, p) <- rules, q == state, a == symbol] ) > 0
---         then Just (head $ [p | (q, a, p) <- rules, q == state, a == symbol])    -- Return Just target state
---         else Nothing -- Return nothing
+-- Merge 2 lists
+merge :: [a] -> [a] -> [a]
+merge xs     []     = xs
+merge []     ys     = ys
+merge (x:xs) (y:ys) = x : y : merge xs ys
 
--- addSINK :: Automata -> Automata
+-- Create list of transitions at SINK state
+createTransitionsToSINK :: [[String]] -> [Transition]
+createTransitionsToSINK [] = []
+createTransitionsToSINK (x:xs) = (constructTransition x):(createTransitionsToSINK xs)
+
+-- Add SINK state in case of FSM was not complete
+addSINK :: Automata -> Automata
 addSINK fsm = do
     let
-        sinkedRules = Set.toList $ Set.fromList [(p, a, "SINK") | p <- states fsm, q <- states fsm, a <- alphabet fsm, (length $ sigma fsm p a) == 0 ]
+        sinkedRules = Set.toList $ Set.fromList [ [p, [a],"SINK"] | p <- states fsm, q <- states fsm, a <- alphabet fsm, (length $ sigma fsm p a) == 0 ]
+        trs = createTransitionsToSINK sinkedRules
 
-
-    putStrLn "-------"
-    print $ sinkedRules
-    putStrLn "-------"
-    -- print $ sinkedRules
+    if length trs > 0
+        then Automata (merge (states fsm) ["SINK"]) (alphabet fsm) (start fsm) (merge (transitions fsm)trs) (finits fsm)
+        else do fsm
 
 -- Execute minimization; parameter -t
 minimize :: String -> IO()
 minimize input = do
-    addSINK $ makeFSM input
+    print $ addSINK $ makeFSM input
     putStrLn "minimize"
     return()
-    -- let
-        -- (states, alphabet, start, finits, rules) = makeDKA input -- Create DKA based on definition
-        -- pairs = [(x, y) | x <- states, y <- alphabet] -- Create pairs of rules
-        -- nonFinits = Set.toList ( (Set.fromList states) `Set.difference` (Set.fromList finits) )
-        -- zeroEq = [finits, nonFinits]
-        -- targets =  (map (sigma rules ) pairs ) -- Target states
-        -- distinguishable = [(p, q) | p <- finits, q <- nonFinits]
 
-    -- tableFilling $ (states, alphabet, start, finits, rules)
-    -- print $ distinguishable
-    -- print "-----------"
-    -- print $ finits
-    -- print "-----------"
-    -- print $ nonFinits
-    -- print "-----------"
-    -- print $ rules
-    -- print "-----------"
-    -- print $ pairs
-    -- print "-----------"
-    -- print $ targets
-    -- return ()
-    
 
 
 -- Read DKA from the file

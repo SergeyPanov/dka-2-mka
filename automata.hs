@@ -20,7 +20,7 @@ data Automata = Automata {states :: [State]
                         } deriving(Show) -- Custom datatype for fsm
 
 -- Return list of "to" states
--- sigma :: Automata -> State -> Symbol -> [State]
+sigma :: Automata -> State -> Symbol -> [State]
 sigma fsm f i = [q | Transition p a q <- transitions fsm, p == f, i == a]
 
 instance Eq Transition where
