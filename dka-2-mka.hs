@@ -97,12 +97,12 @@ merge xs     []     = xs
 merge []     ys     = ys
 merge (x:xs) (y:ys) = x : y : merge xs ys
 
--- Execute zero distinguish
+-- Execute zero undistinguish
 zeroIteration :: Automata -> [(State, State)]
-zeroIteration fsm = merge fs nfs 
+zeroIteration fsm = merge fs nfs -- Merged list
     where
-        fs = [(p, q) | p <- finits fsm, q <- finits fsm]
-        nfs = [(p, q) | p <- nonFinits fsm, q <- nonFinits fsm]
+        fs = [(p, q) | p <- finits fsm, q <- finits fsm]    -- Finite states
+        nfs = [(p, q) | p <- nonFinits fsm, q <- nonFinits fsm] -- Non finite states
 
 -- Create list of transitions at SINK state
 createTransitionsToSINK :: [[String]] -> [Transition]
@@ -120,15 +120,55 @@ addSINK fsm = do
         then Automata (merge (states fsm) ["SINK"]) (alphabet fsm) (start fsm) (merge (transitions fsm)trs) (finits fsm)
         else do fsm
 
+-- Remove repeated elements from list
+unique :: Ord a => [a] -> [a]
+unique l = Set.toList $ Set.fromList l
 
+-- Creating undistinguished pairs
+-- makeUnDistinguishPairs :: [(State, State)] -> [(State, State)] -> Automata -> [(State, State)]
+-- makeUnDistinguishPairs prevPairs fsm = do
+--     let
+--         newPairs = unique $ [((p, q), a) | (p, q) <- prevPairs, a <- alphabet fsm, ((head (sigma fsm p a) ), (head (sigma fsm q a))) `elem` prevPairs]
+        
+--         filteredNewPairs = filter ( \((p, q), _) -> (length [((s1, s2), a) | ((s1, s2), a) <- newPairs, s1 == p, s2 == q]) == (length $ alphabet fsm) ) newPairs
 
--- zeroIteration :: Automata -> 
+--         nextPairs = unique $ [(p, q) | ((p, q), a) <- filteredNewPairs]
+
+--     print $ prevPairs
+--     print $ nextPairs
+
+--     if (Set.fromList prevPairs) == (Set.fromList nextPairs)
+--         then prevPairs
+--         else makeUnDistinguishPairs nextPairs fsm
+
+makeUnDistinguishPairs prevPairs fsm
+    | (Set.fromList prevPairs) == (Set.fromList nextPairs) = nextPairs
+    | otherwise = makeUnDistinguishPairs nextPairs fsm
+    where
+        newPairs = unique $ [((p, q), a) | (p, q) <- prevPairs, a <- alphabet fsm, ((head (sigma fsm p a) ), (head (sigma fsm q a))) `elem` prevPairs]
+        filteredNewPairs = filter ( \((p, q), _) -> (length [((s1, s2), a) | ((s1, s2), a) <- newPairs, s1 == p, s2 == q]) == (length $ alphabet fsm) ) newPairs
+        nextPairs = unique $ [(p, q) | ((p, q), a) <- filteredNewPairs]
 
 -- Execute minimization; parameter -t
 minimize :: String -> IO()
 minimize input = do
-    print $ zeroIteration $ addSINK $ makeFSM input
+    let
+        fsm = makeFSM input -- Create DFA
+        zeroUndistinguishedPairs = zeroIteration $ addSINK fsm
+        pairs = makeUnDistinguishPairs zeroUndistinguishedPairs fsm
+        -- newPairs = unique $ [((p, q), a) | (p, q) <- zeroUndistinguishedPairs, a <- alphabet fsm, ((head (sigma fsm p a) ), (head (sigma fsm q a))) `elem` zeroUndistinguishedPairs]
 
+        -- filteredNewPairs = filter ( \((p, q), _) -> (length [((s1, s2), a) | ((s1, s2), a) <- newPairs, s1 == p, s2 == q]) == (length $ alphabet fsm) ) newPairs
+
+        -- nextIteration = unique $ [(p, q) | ((p, q), a) <- filteredNewPairs]
+
+
+    -- print $ nextIteration
+    -- print $ "--------"
+    -- print $ zeroUndistinguishedPairs
+    -- print $ "--------"
+    -- print$ filteredNewPairs
+    print $ pairs
     putStrLn "minimize"
     return()
 
