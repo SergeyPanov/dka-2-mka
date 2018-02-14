@@ -113,11 +113,13 @@ createTransitionsToSINK (x:xs) = (constructTransition x):(createTransitionsToSIN
 addSINK :: Automata -> Automata
 addSINK fsm = do
     let
-        sinkedRules = Set.toList $ Set.fromList [ [p, [a],"SINK"] | p <- states fsm, q <- states fsm, a <- alphabet fsm, (length $ sigma fsm p a) == 0 ]
+        sinkedRules = unique [ [p, [a],"SINK"] | p <- states fsm, q <- states fsm, a <- alphabet fsm, (length $ sigma fsm p a) == 0 ]
+        sinkLoop = unique [["SINK", [a], "SINK"] | a <- alphabet fsm]
         trs = createTransitionsToSINK sinkedRules
+        sinkLoopTrs = createTransitionsToSINK sinkLoop
 
     if length trs > 0
-        then Automata (merge (states fsm) ["SINK"]) (alphabet fsm) (start fsm) (merge (transitions fsm)trs) (finits fsm)
+        then Automata (merge (states fsm) ["SINK"]) (alphabet fsm) (start fsm) (merge (merge (transitions fsm)trs) sinkLoopTrs) (finits fsm)
         else do fsm
 
 -- Remove repeated elements from list
