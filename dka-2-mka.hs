@@ -153,7 +153,7 @@ makeUnDistinguishPairs prevPairs fsm
 minimize :: String -> IO()
 minimize input = do
     let
-        fsm = makeFSM input -- Create DFA
+        fsm = addSINK $ makeFSM input -- Create DFA
         zeroUndistinguishedPairs = zeroIteration $ addSINK fsm
         pairs = makeUnDistinguishPairs zeroUndistinguishedPairs fsm
         -- newPairs = unique $ [((p, q), a) | (p, q) <- zeroUndistinguishedPairs, a <- alphabet fsm, ((head (sigma fsm p a) ), (head (sigma fsm q a))) `elem` zeroUndistinguishedPairs]
@@ -162,7 +162,7 @@ minimize input = do
 
         -- nextIteration = unique $ [(p, q) | ((p, q), a) <- filteredNewPairs]
 
-
+    print $ fsm
     -- print $ nextIteration
     -- print $ "--------"
     -- print $ zeroUndistinguishedPairs
