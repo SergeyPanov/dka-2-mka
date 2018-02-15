@@ -48,7 +48,7 @@ getAlphabet (x:xs) = (getInput x):(getAlphabet xs)
 stringifyTransition :: Transition -> String
 stringifyTransition tr = (from tr) ++ "," ++ (\c -> [c]) (input tr) ++ "," ++ (to tr)
 
--- Construct FSM
+-- Construct FSM based on input string
 makeFSM :: String -> Automata
 makeFSM input =
     let lns = lines input
@@ -74,7 +74,7 @@ readAndPrint input = do
     putStrLn $ id $ List.intercalate "\n" stringifyedTransitions
     return()
 
--- Merge 2 lists
+-- Merge lists
 merge :: [a] -> [a] -> [a]
 merge xs     []     = xs
 merge []     ys     = ys
@@ -119,6 +119,7 @@ unique :: Ord a => [a] -> [a]
 unique l = Set.toList $ Set.fromList l
 
 -- Create set of undistinguished pairs of states
+makeUnDistinguishPairs :: [(State, State)] -> Automata -> [(State, State)]
 makeUnDistinguishPairs prevPairs fsm
     | (Set.fromList prevPairs) == (Set.fromList nextPairs) = nextPairs
     | otherwise = makeUnDistinguishPairs nextPairs fsm
@@ -138,17 +139,22 @@ gatherUndistinguishedCls undPairs fsm = ([getClassForState q undPairs fsm| q <- 
 
 
 
--- getTransitionsForClass :: EqClass -> [EqClass] -> Automata -> ([State], Symbol, [State])
+getTransitionsForClass :: EqClass -> [EqClass] -> Automata -> [(EqClass, Symbol, EqClass)]
 getTransitionsForClass eqClass allClasses fsm = ([(eqClass, a, dst) |dst <- allClasses, from <- allClasses , eqClass == from, a <- alphabet fsm, Transition (state eqClass) a (state dst) `elem` transitions fsm])
 
 -- Make transitions for new automata
--- gatherNewTransitions :: [EqClass] -> Automata -> [Transition]
+gatherNewTransitions  :: [EqClass] -> Automata -> [[(EqClass, Symbol, EqClass)]]
 gatherNewTransitions eqClasses fsm = [getTransitionsForClass cls eqClasses fsm | cls <- eqClasses]
 
 -- Remove duplicate transitions
--- filterSameTransitions ::
+filterSameTransitions :: Eq a => [a] -> [a]
 filterSameTransitions trs = removeDuplicates trs
 
+-- Create transition between equivalence classes based on assignment
+-- transitionForEqClasses :: (EqClass, Symbol, EqClass) -> Transition
+-- transitionForEqClasses (fromClass, a, toClass) = do
+--     let
+--         from = Set.fromLi
 -- Execute minimization; parameter -t
 minimize :: String -> IO()
 minimize input = do
@@ -160,6 +166,7 @@ minimize input = do
         newTransitions = gatherNewTransitions eqClasses fsm -- Create new transitions
         filteredTransitions = [filterSameTransitions trs | trs <- newTransitions]   -- Remove duplicated transitions
         mergedTransitions = removeDuplicates $ foldl (merge) [] filteredTransitions -- Merge lists of transitions to one list and remove duplicated transitions
+
 
 
     print $  mergedTransitions
