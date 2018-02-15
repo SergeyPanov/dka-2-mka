@@ -166,9 +166,12 @@ minimize input = do
         newTransitions = gatherNewTransitions eqClasses fsm -- Create new transitions
         filteredTransitions = [filterSameTransitions trs | trs <- newTransitions]   -- Remove duplicated transitions
         mergedTransitions = removeDuplicates $ foldl (merge) [] filteredTransitions -- Merge lists of transitions to one list and remove duplicated transitions
+        aux = map (\(fr, a, to) -> (minimum (eqCls fr), a, minimum (eqCls to))) mergedTransitions
 
 
 
+    print $ aux
+    print $ "--------------"
     print $  mergedTransitions
     print $ "--------------"
     -- print $ filteredTransitions
