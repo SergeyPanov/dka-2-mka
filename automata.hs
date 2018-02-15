@@ -21,6 +21,11 @@ data Automata = Automata {states :: [State]
                         , finits :: [State]
                         } deriving(Show) -- Custom datatype for fsm
 
+
+data EqClass = EqClass { state :: State
+                        , eqCls :: [State]
+                    } deriving (Show)
+
 -- Return list of "to" states
 sigma :: Automata -> State -> Symbol -> [State]
 sigma fsm f i = [q | Transition p a q <- transitions fsm, p == f, i == a]

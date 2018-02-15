@@ -74,23 +74,6 @@ readAndPrint input = do
     putStrLn $ id $ List.intercalate "\n" stringifyedTransitions
     return()
 
--- Table filling algorithm
--- tableFilling :: 
-tableFilling (states, alphabet, start, finits, rules) = do
-    let
-        nonFinits = Set.toList ( (Set.fromList states) `Set.difference` (Set.fromList finits) )
-        distinguishableF = [(p, q) | p <- finits, q <- finits]
-        distinguishableNF = [(p, q) | p <- nonFinits, q <- nonFinits]
-        distinguishable = Set.toList (Set.fromList distinguishableF `Set.union` Set.fromList distinguishableNF)
-
-    print $ distinguishable
-    print "-----------"
-    print $ finits
-    print "-----------"
-    print $ nonFinits
-
-    return()
-
 -- Merge 2 lists
 merge :: [a] -> [a] -> [a]
 merge xs     []     = xs
@@ -126,23 +109,7 @@ addSINK fsm = do
 unique :: Ord a => [a] -> [a]
 unique l = Set.toList $ Set.fromList l
 
--- Creating undistinguished pairs
--- makeUnDistinguishPairs :: [(State, State)] -> [(State, State)] -> Automata -> [(State, State)]
--- makeUnDistinguishPairs prevPairs fsm = do
---     let
---         newPairs = unique $ [((p, q), a) | (p, q) <- prevPairs, a <- alphabet fsm, ((head (sigma fsm p a) ), (head (sigma fsm q a))) `elem` prevPairs]
-        
---         filteredNewPairs = filter ( \((p, q), _) -> (length [((s1, s2), a) | ((s1, s2), a) <- newPairs, s1 == p, s2 == q]) == (length $ alphabet fsm) ) newPairs
-
---         nextPairs = unique $ [(p, q) | ((p, q), a) <- filteredNewPairs]
-
---     print $ prevPairs
---     print $ nextPairs
-
---     if (Set.fromList prevPairs) == (Set.fromList nextPairs)
---         then prevPairs
---         else makeUnDistinguishPairs nextPairs fsm
-
+-- Create set of undistinguished pairs of states
 makeUnDistinguishPairs prevPairs fsm
     | (Set.fromList prevPairs) == (Set.fromList nextPairs) = nextPairs
     | otherwise = makeUnDistinguishPairs nextPairs fsm
@@ -151,6 +118,24 @@ makeUnDistinguishPairs prevPairs fsm
         filteredNewPairs = filter ( \((p, q), _) -> (length [((s1, s2), a) | ((s1, s2), a) <- newPairs, s1 == p, s2 == q]) == (length $ alphabet fsm) ) newPairs
         nextPairs = unique $ [(p, q) | ((p, q), a) <- filteredNewPairs]
 
+
+-- Return class of equivalence for state "s"
+getClassForState :: State -> [(State, State)] -> Automata -> [State]
+getClassForState s pairs fsm = unique [q | p <- states fsm, q <- states fsm, p == s, (p, q) `elem` pairs]
+
+-- Based on pairs of undistinguished states gather set of equivalent classes
+gatherUndistinguishedSets :: [(State, State)] -> Automata -> [[State]]
+gatherUndistinguishedSets undPairs fsm = unique [getClassForState q undPairs fsm| q <- states fsm]
+
+
+
+-- getTransitionsForClass :: [State] -> Automata -> ([State], Symbol, [State])
+-- getTransitionsForClass eqClass fsm = []
+-- Make transitions for new automata
+-- gatherNewTransitions :: [[State]] -> Automata -> [Transition]
+-- gatherNewTransitions eqClasses fsm = do
+--     let 
+
 -- Execute minimization; parameter -t
 minimize :: String -> IO()
 minimize input = do
@@ -158,23 +143,13 @@ minimize input = do
         fsm = addSINK $ makeFSM input -- Create DFA
         zeroUndistinguishedPairs = zeroIteration $ addSINK fsm
         pairs = makeUnDistinguishPairs zeroUndistinguishedPairs fsm
-        -- newPairs = unique $ [((p, q), a) | (p, q) <- zeroUndistinguishedPairs, a <- alphabet fsm, ((head (sigma fsm p a) ), (head (sigma fsm q a))) `elem` zeroUndistinguishedPairs]
+        eqClasses = gatherUndistinguishedSets pairs fsm
 
-        -- filteredNewPairs = filter ( \((p, q), _) -> (length [((s1, s2), a) | ((s1, s2), a) <- newPairs, s1 == p, s2 == q]) == (length $ alphabet fsm) ) newPairs
 
-        -- nextIteration = unique $ [(p, q) | ((p, q), a) <- filteredNewPairs]
-
-    print $ fsm
-    -- print $ nextIteration
-    -- print $ "--------"
-    -- print $ zeroUndistinguishedPairs
-    -- print $ "--------"
-    -- print$ filteredNewPairs
-    print $ pairs
+    print $ eqClasses
+    -- print $ pairs
     putStrLn "minimize"
     return()
-
-
 
 -- Read DKA from the file
 readFromFile :: ( String -> IO() ) -> FilePath -> IO()
