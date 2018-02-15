@@ -139,7 +139,7 @@ gatherUndistinguishedCls undPairs fsm = ([getClassForState q undPairs fsm| q <- 
 
 
 -- getTransitionsForClass :: EqClass -> [EqClass] -> Automata -> ([State], Symbol, [State])
-getTransitionsForClass eqClass allClasses fsm = (eqClass, ([(a, dst) |dst <- allClasses, from <- allClasses , eqClass == from, a <- alphabet fsm, Transition (state eqClass) a (state dst) `elem` transitions fsm]))
+getTransitionsForClass eqClass allClasses fsm = ([(eqClass, a, dst) |dst <- allClasses, from <- allClasses , eqClass == from, a <- alphabet fsm, Transition (state eqClass) a (state dst) `elem` transitions fsm])
 
 -- Make transitions for new automata
 -- gatherNewTransitions :: [EqClass] -> Automata -> [Transition]
@@ -158,8 +158,8 @@ minimize input = do
         pairs = makeUnDistinguishPairs zeroUndistinguishedPairs fsm
         eqClasses = gatherUndistinguishedCls pairs fsm
         newTransitions = gatherNewTransitions eqClasses fsm
-        filteredTransitions = [(fst trs, filterSameTransitions $ snd trs) | trs <- newTransitions]
-        
+        filteredTransitions = [filterSameTransitions trs | trs <- newTransitions]
+
 
     
     print $ filteredTransitions
