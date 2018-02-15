@@ -145,7 +145,9 @@ getTransitionsForClass eqClass allClasses fsm = (eqClass, ([(a, dst) |dst <- all
 -- gatherNewTransitions :: [EqClass] -> Automata -> [Transition]
 gatherNewTransitions eqClasses fsm = [getTransitionsForClass cls eqClasses fsm | cls <- eqClasses]
 
-
+-- Remove duplicate transitions
+-- filterSameTransitions ::
+filterSameTransitions trs = removeDuplicates trs
 
 -- Execute minimization; parameter -t
 minimize :: String -> IO()
@@ -156,9 +158,11 @@ minimize input = do
         pairs = makeUnDistinguishPairs zeroUndistinguishedPairs fsm
         eqClasses = gatherUndistinguishedCls pairs fsm
         newTransitions = gatherNewTransitions eqClasses fsm
+        filteredTransitions = [(fst trs, filterSameTransitions $ snd trs) | trs <- newTransitions]
+        
 
     
-    print $ newTransitions
+    print $ filteredTransitions
     putStrLn "minimize"
     return()
 
