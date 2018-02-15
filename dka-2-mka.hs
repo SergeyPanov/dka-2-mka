@@ -154,15 +154,17 @@ minimize :: String -> IO()
 minimize input = do
     let
         fsm = addSINK $ makeFSM input -- Create DFA
-        zeroUndistinguishedPairs = zeroIteration $ addSINK fsm
-        pairs = makeUnDistinguishPairs zeroUndistinguishedPairs fsm
-        eqClasses = gatherUndistinguishedCls pairs fsm
-        newTransitions = gatherNewTransitions eqClasses fsm
-        filteredTransitions = [filterSameTransitions trs | trs <- newTransitions]
+        zeroUndistinguishedPairs = zeroIteration $ addSINK fsm -- Create zero undistinguished pairs of states
+        pairs = makeUnDistinguishPairs zeroUndistinguishedPairs fsm -- Create undistinguished pairs of states
+        eqClasses = gatherUndistinguishedCls pairs fsm -- Create equivalence classes
+        newTransitions = gatherNewTransitions eqClasses fsm -- Create new transitions
+        filteredTransitions = [filterSameTransitions trs | trs <- newTransitions]   -- Remove duplicated transitions
+        mergedTransitions = removeDuplicates $ foldl (merge) [] filteredTransitions -- Merge lists of transitions to one list and remove duplicated transitions
 
 
-    
-    print $ filteredTransitions
+    print $  mergedTransitions
+    print $ "--------------"
+    -- print $ filteredTransitions
     putStrLn "minimize"
     return()
 
