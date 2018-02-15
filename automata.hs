@@ -24,7 +24,7 @@ data Automata = Automata {states :: [State]
 
 data EqClass = EqClass { state :: State
                         , eqCls :: [State]
-                    } deriving (Show)
+                    } deriving (Show, Ord)
 
 -- Return list of "to" states
 sigma :: Automata -> State -> Symbol -> [State]
@@ -33,6 +33,10 @@ sigma fsm f i = [q | Transition p a q <- transitions fsm, p == f, i == a]
 -- Return list of non finit states
 nonFinits :: Automata -> [State]
 nonFinits fsm = Set.toList ( (Set.fromList $ states fsm) `Set.difference` (Set.fromList $ finits fsm) )
+
+instance Eq EqClass where
+    (==) :: EqClass -> EqClass -> Bool
+    c1 == c2 = (Set.fromList $ eqCls c1) == (Set.fromList $ eqCls c2)
 
 instance Eq Transition where
     (==) :: Transition -> Transition -> Bool

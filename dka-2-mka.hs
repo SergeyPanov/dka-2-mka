@@ -105,6 +105,15 @@ addSINK fsm = do
         then Automata (merge (states fsm) ["SINK"]) (alphabet fsm) (start fsm) (merge (merge (transitions fsm)trs) sinkLoopTrs) (finits fsm)
         else do fsm
 
+-- Remove duplicates
+removeDuplicates :: Eq a => [a] -> [a]
+removeDuplicates = rdHelper []
+    where rdHelper seen [] = seen
+          rdHelper seen (x:xs)
+              | x `elem` seen = rdHelper seen xs
+              | otherwise = rdHelper (seen ++ [x]) xs
+
+
 -- Remove repeated elements from list
 unique :: Ord a => [a] -> [a]
 unique l = Set.toList $ Set.fromList l
@@ -120,21 +129,23 @@ makeUnDistinguishPairs prevPairs fsm
 
 
 -- Return class of equivalence for state "s"
-getClassForState :: State -> [(State, State)] -> Automata -> [State]
-getClassForState s pairs fsm = unique [q | p <- states fsm, q <- states fsm, p == s, (p, q) `elem` pairs]
+getClassForState :: State -> [(State, State)] -> Automata -> EqClass
+getClassForState s pairs fsm = EqClass s (unique [q | p <- states fsm, q <- states fsm, p == s, (p, q) `elem` pairs])
 
 -- Based on pairs of undistinguished states gather set of equivalent classes
-gatherUndistinguishedSets :: [(State, State)] -> Automata -> [[State]]
-gatherUndistinguishedSets undPairs fsm = unique [getClassForState q undPairs fsm| q <- states fsm]
+gatherUndistinguishedCls :: [(State, State)] -> Automata -> [EqClass]
+gatherUndistinguishedCls undPairs fsm = ([getClassForState q undPairs fsm| q <- states fsm])
 
 
 
--- getTransitionsForClass :: [State] -> Automata -> ([State], Symbol, [State])
--- getTransitionsForClass eqClass fsm = []
+-- getTransitionsForClass :: EqClass -> [EqClass] -> Automata -> ([State], Symbol, [State])
+getTransitionsForClass eqClass allClasses fsm = (eqClass, ([(a, dst) |dst <- allClasses, from <- allClasses , eqClass == from, a <- alphabet fsm, Transition (state eqClass) a (state dst) `elem` transitions fsm]))
+
 -- Make transitions for new automata
--- gatherNewTransitions :: [[State]] -> Automata -> [Transition]
--- gatherNewTransitions eqClasses fsm = do
---     let 
+-- gatherNewTransitions :: [EqClass] -> Automata -> [Transition]
+gatherNewTransitions eqClasses fsm = [getTransitionsForClass cls eqClasses fsm | cls <- eqClasses]
+
+
 
 -- Execute minimization; parameter -t
 minimize :: String -> IO()
@@ -143,11 +154,11 @@ minimize input = do
         fsm = addSINK $ makeFSM input -- Create DFA
         zeroUndistinguishedPairs = zeroIteration $ addSINK fsm
         pairs = makeUnDistinguishPairs zeroUndistinguishedPairs fsm
-        eqClasses = gatherUndistinguishedSets pairs fsm
+        eqClasses = gatherUndistinguishedCls pairs fsm
+        newTransitions = gatherNewTransitions eqClasses fsm
 
-
-    print $ eqClasses
-    -- print $ pairs
+    
+    print $ newTransitions
     putStrLn "minimize"
     return()
 
