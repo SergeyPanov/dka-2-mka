@@ -191,10 +191,9 @@ minimize input = do
 
         newStart = minimum $ eqCls ( extractFromMaybe "No new start state" maybeNewStart )-- Get new start state, or ERROR message
 
-
-    putStrLn $ id $ List.intercalate "," newStates
+    putStrLn $ id $ List.intercalate "," $ List.sort newStates
     putStrLn $ id newStart
-    putStrLn $ id $ List.intercalate "," newFinitStates
+    putStrLn $ id $ List.intercalate "," $ List.sort newFinitStates
     putStrLn $ id $ List.intercalate "\n" $ List.sort $ (map stringifyTransition ( map (\(fr, s, to) -> Transition fr s to) filteredPatternedTransitions ))
     return()
 
