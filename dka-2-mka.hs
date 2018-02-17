@@ -4,6 +4,7 @@ import System.IO
 import System.IO.Error
 import qualified Data.Set as Set
 import qualified Data.List as List
+import Data.Maybe
 import Automata
 
 -- Hold input parameters
@@ -80,7 +81,7 @@ merge xs     []     = xs
 merge []     ys     = ys
 merge (x:xs) (y:ys) = x : y : merge xs ys
 
--- Execute zero undistinguish
+-- Execute zero undistinguished
 zeroIteration :: Automata -> [(State, State)]
 zeroIteration fsm = merge fs nfs -- Merged list
     where
@@ -150,32 +151,51 @@ gatherNewTransitions eqClasses fsm = [getTransitionsForClass cls eqClasses fsm |
 filterSameTransitions :: Eq a => [a] -> [a]
 filterSameTransitions trs = removeDuplicates trs
 
--- Create transition between equivalence classes based on assignment
--- transitionForEqClasses :: (EqClass, Symbol, EqClass) -> Transition
--- transitionForEqClasses (fromClass, a, toClass) = do
---     let
---         from = Set.fromLi
+
+-- Extract value from Maybe type or 
+extractFromMaybe :: String -> Maybe EqClass -> EqClass
+extractFromMaybe def optional = 
+    case optional of
+        Just value -> value
+        Nothing    -> error def
+
 -- Execute minimization; parameter -t
 minimize :: String -> IO()
 minimize input = do
     let
         fsm = addSINK $ makeFSM input -- Create DFA
+        
         zeroUndistinguishedPairs = zeroIteration $ addSINK fsm -- Create zero undistinguished pairs of states
+        
         pairs = makeUnDistinguishPairs zeroUndistinguishedPairs fsm -- Create undistinguished pairs of states
+        
         eqClasses = gatherUndistinguishedCls pairs fsm -- Create equivalence classes
+        
         newTransitions = gatherNewTransitions eqClasses fsm -- Create new transitions
+        
         filteredTransitions = [filterSameTransitions trs | trs <- newTransitions]   -- Remove duplicated transitions
+        
         mergedTransitions = removeDuplicates $ foldl (merge) [] filteredTransitions -- Merge lists of transitions to one list and remove duplicated transitions
-        aux = map (\(fr, a, to) -> (minimum (eqCls fr), a, minimum (eqCls to))) mergedTransitions
+        
+        patternedTransitions = map (\(fr, a, to) -> (minimum (eqCls fr), a, minimum (eqCls to))) mergedTransitions -- Transitions gathered to tuples (from, symbol, to)
+        
+        filteredPatternedTransitions = filter (\(stFrom, symb, stTo) -> stFrom /= "SINK" && stTo /= "SINK") patternedTransitions -- Transitions without "SINK" state
+
+        newStates = removeDuplicates ( foldl  merge [] (map (\(stFrom, symb, stTo) -> stFrom:stTo:[]) filteredPatternedTransitions) )-- Set of new states
+
+        finitEqClasses = removeDuplicates $ filter (\eqClass -> (state eqClass) `elem` (finits fsm) ) eqClasses -- Get finite classes of equivalence
+
+        newFinitStates = removeDuplicates $ map (\eqCl -> minimum $ eqCls eqCl ) finitEqClasses -- Get new finite states
+
+        maybeNewStart =  (List.find (\eqCl -> (state eqCl) == (start fsm)) eqClasses) -- Get new start state
+
+        newStart = minimum $ eqCls ( extractFromMaybe "No new start state" maybeNewStart )-- Get new start state, or ERROR message
 
 
-
-    print $ aux
-    print $ "--------------"
-    print $  mergedTransitions
-    print $ "--------------"
-    -- print $ filteredTransitions
-    putStrLn "minimize"
+    putStrLn $ id $ List.intercalate "," newStates
+    putStrLn $ id newStart
+    putStrLn $ id $ List.intercalate "," newFinitStates
+    putStrLn $ id $ List.intercalate "\n" $ List.sort $ (map stringifyTransition ( map (\(fr, s, to) -> Transition fr s to) filteredPatternedTransitions ))
     return()
 
 -- Read DKA from the file
