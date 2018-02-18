@@ -54,9 +54,9 @@ makeFSM :: String -> Automata
 makeFSM input =
     let lns = lines input
         (states:start:finits:rules) = lns
-        listsOfRules = fmap split ( Set.toList $ Set.fromList rules)
+        listsOfRules = fmap split ( removeDuplicates rules)
         tuples = fmap constructTransition listsOfRules
-    in Automata (Set.toList (Set.fromList (split states))) (Set.toList (Set.fromList (getAlphabet tuples))) (start) (tuples) (Set.toList (Set.fromList (split finits)))
+    in Automata (removeDuplicates (split states)) (removeDuplicates (getAlphabet tuples)) (start) (tuples) (removeDuplicates (split finits))
 
 -- Execute reading and printing; parameter -i
 readAndPrint :: String -> IO()
@@ -97,8 +97,8 @@ createTransitionsToSINK (x:xs) = (constructTransition x):(createTransitionsToSIN
 addSINK :: Automata -> Automata
 addSINK fsm = do
     let
-        sinkedRules = unique [ [p, [a],"SINK"] | p <- states fsm, q <- states fsm, a <- alphabet fsm, (length $ sigma fsm p a) == 0 ]
-        sinkLoop = unique [["SINK", [a], "SINK"] | a <- alphabet fsm]
+        sinkedRules = removeDuplicates [ [p, [a],"SINK"] | p <- states fsm, q <- states fsm, a <- alphabet fsm, (length $ sigma fsm p a) == 0 ]
+        sinkLoop = removeDuplicates [["SINK", [a], "SINK"] | a <- alphabet fsm]
         trs = createTransitionsToSINK sinkedRules
         sinkLoopTrs = createTransitionsToSINK sinkLoop
 
@@ -106,7 +106,7 @@ addSINK fsm = do
         then Automata (merge (states fsm) ["SINK"]) (alphabet fsm) (start fsm) (merge (merge (transitions fsm)trs) sinkLoopTrs) (finits fsm)
         else do fsm
 
--- Remove duplicates
+-- Remove duplicates from list
 removeDuplicates :: Eq a => [a] -> [a]
 removeDuplicates = rdHelper []
     where rdHelper seen [] = seen
@@ -114,25 +114,20 @@ removeDuplicates = rdHelper []
               | x `elem` seen = rdHelper seen xs
               | otherwise = rdHelper (seen ++ [x]) xs
 
-
--- Remove repeated elements from list
-unique :: Ord a => [a] -> [a]
-unique l = Set.toList $ Set.fromList l
-
 -- Create set of undistinguished pairs of states
 makeUnDistinguishPairs :: [(State, State)] -> Automata -> [(State, State)]
 makeUnDistinguishPairs prevPairs fsm
     | (Set.fromList prevPairs) == (Set.fromList nextPairs) = nextPairs
     | otherwise = makeUnDistinguishPairs nextPairs fsm
     where
-        newPairs = unique $ [((p, q), a) | (p, q) <- prevPairs, a <- alphabet fsm, ((head (sigma fsm p a) ), (head (sigma fsm q a))) `elem` prevPairs]
+        newPairs = removeDuplicates $ [((p, q), a) | (p, q) <- prevPairs, a <- alphabet fsm, ((head (sigma fsm p a) ), (head (sigma fsm q a))) `elem` prevPairs]
         filteredNewPairs = filter ( \((p, q), _) -> (length [((s1, s2), a) | ((s1, s2), a) <- newPairs, s1 == p, s2 == q]) == (length $ alphabet fsm) ) newPairs
-        nextPairs = unique $ [(p, q) | ((p, q), a) <- filteredNewPairs]
+        nextPairs = removeDuplicates $ [(p, q) | ((p, q), a) <- filteredNewPairs]
 
 
 -- Return class of equivalence for state "s"
 getClassForState :: State -> [(State, State)] -> Automata -> EqClass
-getClassForState s pairs fsm = EqClass s (unique [q | p <- states fsm, q <- states fsm, p == s, (p, q) `elem` pairs])
+getClassForState s pairs fsm = EqClass s (removeDuplicates [q | p <- states fsm, q <- states fsm, p == s, (p, q) `elem` pairs])
 
 -- Based on pairs of undistinguished states gather set of equivalent classes
 gatherUndistinguishedCls :: [(State, State)] -> Automata -> [EqClass]
@@ -152,7 +147,7 @@ filterSameTransitions :: Eq a => [a] -> [a]
 filterSameTransitions trs = removeDuplicates trs
 
 
--- Extract value from Maybe type or 
+-- Extract value from Maybe type or throw exception
 extractFromMaybe :: String -> Maybe EqClass -> EqClass
 extractFromMaybe def optional = 
     case optional of
