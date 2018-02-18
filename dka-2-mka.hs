@@ -1,3 +1,5 @@
+-- Project: DKA-2-MKA
+-- Author: Sergey Panov xpanov00
 module Main where
 import System.Environment
 import System.IO
@@ -206,16 +208,10 @@ readFromStdIn action = do
         contents <- getContents
         action contents
 
-
+main :: IO()
 main = do
     (command:source) <- getArgs
-    putStrLn $ "The command " ++  command
-
     let (Just action) = lookup command dispatch
-
     if length source == 0   -- If source file was not set
         then readFromStdIn action   -- Reading from stdin
         else do readFromFile action (head source)   -- Reading from file
-            
-
-    putStrLn "End main"
