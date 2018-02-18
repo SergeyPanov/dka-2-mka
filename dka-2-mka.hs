@@ -129,7 +129,7 @@ makeUnDistinguishPairs prevPairs fsm
 
 -- Return class of equivalence for state "s"
 getClassForState :: State -> [(State, State)] -> Automata -> EqClass
-getClassForState s pairs fsm = EqClass s (removeDuplicates [q | p <- states fsm, q <- states fsm, p == s, (p, q) `elem` pairs])
+getClassForState s pairs fsm = EqClass s (removeDuplicates $ s:[q | p <- states fsm, q <- states fsm, p == s, (p, q) `elem` pairs])
 
 -- Based on pairs of undistinguished states gather set of equivalent classes
 gatherUndistinguishedCls :: [(State, State)] -> Automata -> [EqClass]
@@ -178,11 +178,11 @@ minimize input = do
         
         filteredPatternedTransitions = filter (\(stFrom, symb, stTo) -> stFrom /= "SINK" && stTo /= "SINK") patternedTransitions -- Transitions without "SINK" state
 
-        newStates = removeDuplicates ( foldl  merge [] (map (\(stFrom, symb, stTo) -> stFrom:stTo:[]) filteredPatternedTransitions) )-- Set of new states
+        newStates = map (\cls -> state cls) ( removeDuplicates (filter (\cls -> state cls /= "SINK") eqClasses) )
 
         finitEqClasses = removeDuplicates $ filter (\eqClass -> (state eqClass) `elem` (finits fsm) ) eqClasses -- Get finite classes of equivalence
 
-        newFinitStates = removeDuplicates $ map (\eqCl -> minimum $ eqCls eqCl ) finitEqClasses -- Get new finite states
+        newFinitStates = removeDuplicates $ map (\eqCl -> minimum $ eqCls eqCl ) finitEqClasses  -- Get new finite states
 
         maybeNewStart =  (List.find (\eqCl -> (state eqCl) == (start fsm)) eqClasses) -- Get new start state
 
