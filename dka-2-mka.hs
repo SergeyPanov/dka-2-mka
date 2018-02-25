@@ -58,7 +58,7 @@ makeFSM input =
         (states:start:finits:rules) = lns
         listsOfRules = fmap split ( removeDuplicates rules)
         tuples = fmap constructTransition listsOfRules
-    in Automata (removeDuplicates (split states)) (removeDuplicates (getAlphabet tuples)) (start) (tuples) (removeDuplicates (split finits))
+    in Automata (removeDuplicates (split states)) (removeDuplicates (getAlphabet tuples)) (start) (tuples) (removeDuplicates (filter (\st -> (length st) >= 1 )  (split finits)))
 
 -- Execute reading and printing; parameter -i
 readAndPrint :: String -> IO()
