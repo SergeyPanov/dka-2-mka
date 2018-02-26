@@ -203,15 +203,11 @@ minimize input = do
 
         newStart = minimum $ eqCls ( extractFromMaybe "No new start state" maybeNewStart )-- Get new start state, or ERROR message
 
-    putStrLn $ ( (id $ List.intercalate "," $ List.sort newStates)
-                ++ "\n" ++ (id newStart) ++ "\n"
-                ++ (id $ List.intercalate "," $ List.sort newFinitStates) ++ "\n"
-                ++ (id $ List.intercalate "\n" $ List.sort $ (map stringifyTransition ( map (\(fr, s, to) -> Transition fr s to) filteredPatternedTransitions ))) )
-    putStrLn "--"
-    -- putStrLn $ id $ List.intercalate "," $ List.sort newStates
-    -- putStrLn $ id newStart
-    -- putStrLn $ id $ List.intercalate "," $ List.sort newFinitStates
-    -- putStrLn $ id $ List.intercalate "\n" $ List.sort $ (map stringifyTransition ( map (\(fr, s, to) -> Transition fr s to) filteredPatternedTransitions ))
+
+    putStrLn $ id $ List.intercalate "," $ List.sort newStates
+    putStrLn $ id newStart
+    putStrLn $ id $ List.intercalate "," $ List.sort newFinitStates
+    putStrLn $ id $ List.intercalate "\n" $ List.sort $ (map stringifyTransition ( map (\(fr, s, to) -> Transition fr s to) filteredPatternedTransitions ))
     return()
 
 -- Read DKA from the file
