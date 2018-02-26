@@ -156,11 +156,26 @@ extractFromMaybe def optional =
         Just value -> value
         Nothing    -> error def
 
+validateFSM :: Automata -> Automata
+validateFSM fsm = do
+    let
+        isValidFinite = (Set.fromList $ finits fsm) `Set.isSubsetOf` (Set.fromList $ states fsm)
+        isValidStart = (start fsm) `elem` (states fsm)
+        sts = ( map (\tr -> (from tr):(to tr):[]) (transitions fsm) )
+        mergedSts = removeDuplicates $ foldl (merge) [] sts
+        isValidTransition = (Set.fromList mergedSts) `Set.isSubsetOf` (Set.fromList $ states fsm)
+
+    if isValidStart && isValidFinite && isValidTransition
+        then fsm
+        else error "Invalid format of input DFA"
+
+
+
 -- Execute minimization; parameter -t
 minimize :: String -> IO()
 minimize input = do
     let
-        fsm = addSINK $ makeFSM input -- Create DFA
+        fsm = addSINK $ validateFSM $ makeFSM input -- Create DFA
         
         zeroUndistinguishedPairs = zeroIteration $ addSINK fsm -- Create zero undistinguished pairs of states
         
@@ -188,10 +203,15 @@ minimize input = do
 
         newStart = minimum $ eqCls ( extractFromMaybe "No new start state" maybeNewStart )-- Get new start state, or ERROR message
 
-    putStrLn $ id $ List.intercalate "," $ List.sort newStates
-    putStrLn $ id newStart
-    putStrLn $ id $ List.intercalate "," $ List.sort newFinitStates
-    putStrLn $ id $ List.intercalate "\n" $ List.sort $ (map stringifyTransition ( map (\(fr, s, to) -> Transition fr s to) filteredPatternedTransitions ))
+    putStrLn $ ( (id $ List.intercalate "," $ List.sort newStates)
+                ++ "\n" ++ (id newStart) ++ "\n"
+                ++ (id $ List.intercalate "," $ List.sort newFinitStates) ++ "\n"
+                ++ (id $ List.intercalate "\n" $ List.sort $ (map stringifyTransition ( map (\(fr, s, to) -> Transition fr s to) filteredPatternedTransitions ))) )
+    putStrLn "--"
+    -- putStrLn $ id $ List.intercalate "," $ List.sort newStates
+    -- putStrLn $ id newStart
+    -- putStrLn $ id $ List.intercalate "," $ List.sort newFinitStates
+    -- putStrLn $ id $ List.intercalate "\n" $ List.sort $ (map stringifyTransition ( map (\(fr, s, to) -> Transition fr s to) filteredPatternedTransitions ))
     return()
 
 -- Read DKA from the file
