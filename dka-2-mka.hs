@@ -64,7 +64,7 @@ makeFSM input =
 readAndPrint :: String -> IO()
 readAndPrint input = do
     let
-        fsm = makeFSM input
+        fsm = validateFSM $ makeFSM input
         sts = states fsm
         strt = start fsm
         fnts = finits fsm
