@@ -32,7 +32,7 @@ Each equivalence class is named based in its *the least state*.
 For example lets have a equivalence class made from states `["3", "2", "1"]`, *the least* state is `"1"`. New minimal DFA will have only state `"1"` in the new set of states **Q**.
 As another example lets have a equivalence class `["st_A", "st_B", "st_C"]`. *The least class* represent's the given equivalence class  in minimal DFA will named `"st_A"`.
 # Example
-Lets have an input file with DFA:
+Lets have an input file with DFA: <br>
 `1,2,3,4,5,6` <br>
 `1` <br>
 `1,6` <br>
@@ -48,7 +48,7 @@ Lets have an input file with DFA:
 `5,b,3` <br>
 `6,a,1` <br>
 `6,b,5` <br>
-The intermediate inner representation with equivalence classes will looks like:
+The intermediate inner representation with equivalence classes will looks like: <br>
 `["1", "6"],["2", "5"],["3", "4"]` <br>
 `["1", "6"]` <br>
 `["1", "6"]` <br>
@@ -58,7 +58,7 @@ The intermediate inner representation with equivalence classes will looks like:
 `["2", "5"],b,["3", "4"]` <br>
 `["3", "4"],a,["3", "4"]` <br>
 `["3", "4"],b,["1", "6"]` <br>
-The final result will looks like:
+The final result will looks like: <br>
 `1,2,3` <br>
 `1` <br>
 `1` <br>
