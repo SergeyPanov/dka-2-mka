@@ -33,7 +33,7 @@ mkdir ${ERR}
 # done
 
 
-echo "=======TESTS: -t parameter======="
+echo "=======TESTS: -t input_file======="
 
 # Run tests with -i parameter
 for input_file in ./automatas/inputs/*.in; do

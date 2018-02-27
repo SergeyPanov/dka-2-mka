@@ -136,7 +136,7 @@ gatherUndistinguishedCls :: [(State, State)] -> Automata -> [EqClass]
 gatherUndistinguishedCls undPairs fsm = ([getClassForState q undPairs fsm| q <- states fsm])
 
 
-
+-- Return transitions for given equivalence class
 getTransitionsForClass :: EqClass -> [EqClass] -> Automata -> [(EqClass, Symbol, EqClass)]
 getTransitionsForClass eqClass allClasses fsm = ([(eqClass, a, dst) |dst <- allClasses, from <- allClasses , eqClass == from, a <- alphabet fsm, Transition (state eqClass) a (state dst) `elem` transitions fsm])
 
@@ -156,6 +156,7 @@ extractFromMaybe def optional =
         Just value -> value
         Nothing    -> error def
 
+-- Execute validation process
 validateFSM :: Automata -> Automata
 validateFSM fsm = do
     let
