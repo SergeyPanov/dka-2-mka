@@ -1,8 +1,24 @@
 #!/bin/bash
 
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+NC='\033[0m'
+
+OUTPUTS='./automatas/outputs/'
+ERR='./automatas/err/'
+
 #Create directory with outputs
-rm -r ./automatas/outputs
-mkdir ./automatas/outputs
+if [[ -d ${OUTPUTS} ]]; then
+    rm -r ${OUTPUTS}
+fi
+
+if [[ -d ${ERR} ]]; then
+    rm -r ${ERR}
+fi
+
+
+mkdir ${OUTPUTS}
+mkdir ${ERR}
 
 # echo "=======TESTS: -i parameter======="
 
@@ -24,14 +40,18 @@ for input_file in ./automatas/inputs/*.in; do
 
     fn_without_ext=$(echo ${input_file} | cut -d "/" -f 4 | cut -d "." -f 1)
 
-    ./dka-2-mka -t $input_file >> ./automatas/outputs/${fn_without_ext}".out" 2> /dev/null
+    ./dka-2-mka -t $input_file >> ${OUTPUTS}/${fn_without_ext}".out" 2> /dev/null
 done
 
-Compare outputs with expected outputs
+# Compare outputs with expected outputs
 for input_file in ./automatas/valid_outputs/*.out; do
     fn_without_ext=$(echo ${input_file} | cut -d "/" -f 4 | cut -d "." -f 1)
     
-    echo ${fn_without_ext}
-    diff $input_file ./automatas/outputs/${fn_without_ext}".out"
-    echo ${?}
+
+    diff $input_file ./automatas/outputs/${fn_without_ext}".out" >> ${ERR}${fn_without_ext}".err"
+    if [[ ${?} == 0 ]]; then
+        echo -e "[${GREEN}SUCCESS${NC}] ${fn_without_ext}"
+    else
+        echo -e "[${RED}FAIL${NC}] ${fn_without_ext}"
+    fi
 done
