@@ -33,41 +33,41 @@ For example lets have a equivalence class made from states `["3", "2", "1"]`, *t
 As another example lets have a equivalence class `["st_A", "st_B", "st_C"]`. *The least class* represent's the given equivalence class  in minimal DFA will named `"st_A"`.
 # Example
 Lets have an input file with DFA:
-`1,2,3,4,5,6` 
-`1` 
-`1,6` 
-`1,a,6` 
-`1,b,2` 
-`2,a,5` 
-`2,b,4` 
-`3,a,3` 
-`3,b,6` 
-`4,a,4` 
-`4,b,1` 
-`5,a,2` 
-`5,b,3` 
-`6,a,1` 
-`6,b,5` 
+`1,2,3,4,5,6` <br>
+`1` <br>
+`1,6` <br>
+`1,a,6` <br>
+`1,b,2` <br>
+`2,a,5` <br>
+`2,b,4` <br>
+`3,a,3` <br>
+`3,b,6` <br>
+`4,a,4` <br>
+`4,b,1` <br>
+`5,a,2` <br>
+`5,b,3` <br>
+`6,a,1` <br>
+`6,b,5` <br>
 The intermediate inner representation with equivalence classes will looks like:
-`["1", "6"],["2", "5"],["3", "4"]` 
-`["1", "6"]` 
-`["1", "6"]` 
-`["1", "6"],a,["1", "6"]` 
-`["1", "6"],b,["2", "5"]` 
-`["2", "5"],a,["2", "5"]` 
-`["2", "5"],b,["3", "4"]` 
-`["3", "4"],a,["3", "4"]` 
-`["3", "4"],b,["1", "6"]` 
+`["1", "6"],["2", "5"],["3", "4"]` <br>
+`["1", "6"]` <br>
+`["1", "6"]` <br>
+`["1", "6"],a,["1", "6"]` <br>
+`["1", "6"],b,["2", "5"]` <br>
+`["2", "5"],a,["2", "5"]` <br>
+`["2", "5"],b,["3", "4"]` <br>
+`["3", "4"],a,["3", "4"]` <br>
+`["3", "4"],b,["1", "6"]` <br>
 The final result will looks like:
-`1,2,3` 
-`1` 
-`1` 
-`1,a,1` 
-`1,b,2` 
-`2,a,2` 
-`2,b,3` 
-`3,a,3` 
-`3,b,1` 
+`1,2,3` <br>
+`1` <br>
+`1` <br>
+`1,a,1` <br>
+`1,b,2` <br>
+`2,a,2` <br>
+`2,b,3` <br>
+`3,a,3` <br>
+`3,b,1` <br>
 
 # Coplilation & launching process
 ## Compilation
