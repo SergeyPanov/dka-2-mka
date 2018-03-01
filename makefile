@@ -1,7 +1,7 @@
 COMPILER=ghc
 GFLAGS=--make
-ERR=./automatas/err/
-OUTPUTS=./automatas/outputs/
+ERR=./automates/err/
+OUTPUTS=./automates/outputs/
 TEST=test.sh
 SHELL=bash
 

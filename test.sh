@@ -4,8 +4,8 @@ RED='\033[0;31m'
 GREEN='\033[0;32m'
 NC='\033[0m'
 
-OUTPUTS='./automatas/outputs/'
-ERR='./automatas/err/'
+OUTPUTS='./automates/outputs/'
+ERR='./automates/err/'
 
 #Create directory with outputs
 if [[ -d ${OUTPUTS} ]]; then
@@ -36,7 +36,7 @@ mkdir ${ERR}
 echo "=======TESTS: -t input_file======="
 
 # Run tests with -i parameter
-for input_file in ./automatas/inputs/*.in; do
+for input_file in ./automates/inputs/*.in; do
 
     fn_without_ext=$(echo ${input_file} | cut -d "/" -f 4 | cut -d "." -f 1)
 
@@ -44,11 +44,11 @@ for input_file in ./automatas/inputs/*.in; do
 done
 
 # Compare outputs with expected outputs
-for input_file in ./automatas/valid_outputs/*.out; do
+for input_file in ./automates/valid_outputs/*.out; do
     fn_without_ext=$(echo ${input_file} | cut -d "/" -f 4 | cut -d "." -f 1)
     
 
-    diff $input_file ./automatas/outputs/${fn_without_ext}".out" >> ${ERR}${fn_without_ext}".err"
+    diff $input_file ./automates/outputs/${fn_without_ext}".out" >> ${ERR}${fn_without_ext}".err"
     if [[ ${?} == 0 ]]; then
         echo -e "[${GREEN}SUCCESS${NC}] ${fn_without_ext}"
     else
