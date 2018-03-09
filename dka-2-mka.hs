@@ -187,8 +187,8 @@ minimize input = do
         newTransitions = gatherNewTransitions eqClasses fsm -- Create new transitions
         
         filteredTransitions = [filterSameTransitions trs | trs <- newTransitions]   -- Remove duplicated transitions
-        
-        mergedTransitions = removeDuplicates $ foldl (merge) [] filteredTransitions -- Merge lists of transitions to one list and remove duplicated transitions
+
+        mergedTransitions = removeDuplicates $ filter (\(fr, a, to) -> state to /= "SINK" ) $ foldl (merge) [] filteredTransitions -- Merge lists of transitions to one list and remove duplicated transitions
         
         patternedTransitions = map (\(fr, a, to) -> (minimum (eqCls fr), a, minimum (eqCls to))) mergedTransitions -- Transitions gathered to tuples (from, symbol, to)
         
